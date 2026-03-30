@@ -150,6 +150,20 @@ const length = await redis.llen("tasks")
 console.log(length)  // 3
 
 
+//  Set — Unique Values
+
+await redis.sadd("tags", "javascript", "nodejs", "redis", "javascript") // duplicate "javascript" will be ignored
+
+const tags = await redis.smembers("tags")
+console.log(tags)  // ["javascript", "nodejs", "redis"]
+
+
+// Set ke kuch aur operations
+await redis.hset("user:1", "name", "Alice", "age", 30, "email", "alice@example.com")
+const user = await redis.hgetall("user:1")
+console.log(user)  // { name: "Alice", age: "30", email: "alice@example.com" }
+
+
 app.listen(PORT, () => {
     console.log("Server is running..");
 })
