@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const UsersCollection = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 
+// /api/register
 const userRegister = async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -53,6 +54,7 @@ const userRegister = async (req, res) => {
     })
 }
 
+// /api/refresh
 const refresh = async (req, res) => {
 
     let Token = req.cookies.refreshToken
@@ -85,6 +87,7 @@ const refresh = async (req, res) => {
 
 }
 
+// /api/logout
 const logout = (req, res) => {
     const Token = req.cookies
 
