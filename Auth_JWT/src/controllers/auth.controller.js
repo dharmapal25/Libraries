@@ -14,29 +14,11 @@ const userRegister = async (req, res) => {
 
     // Check if user already exists
     const userExists = await UsersCollection.findOne({ email });
-    // if (userExists) {
-    //     return res.status(400).json({
-    //         msg: "User already exists"
-    //     });
-    // }
-
-    const refreshToken = jwt.sign(
-        { id : userExists._id },
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" }
-    );
-
-    const acessToken = jwt.sign(
-        { id : userExists._id, email: userExists.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "15m" }
-    );
-
-
-    res.cookie("refreshToken", refreshToken);
-
-
-
+    if (userExists) {
+        return res.status(400).json({
+            msg: "User already exists"
+        });
+    }
 
     const user = await UsersCollection.create({
         name,
@@ -44,13 +26,78 @@ const userRegister = async (req, res) => {
         password
     });
 
+    const userId = user._id;
+
+    // console.log("userId : ", userId);
+
+    const refreshToken = jwt.sign(
+        { id: userId },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+    );
+
+    const acessToken = jwt.sign(
+        { id: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "15m" }
+    );
+
+    const inMemory = acessToken;
+
+    res.cookie("refreshToken", refreshToken);
+
     res.status(201).json({
         msg: "User registered successfully",
-        userExists,
-        acessToken,
+        user,
+        "acessToken": inMemory
+    })
+}
+
+const refresh = async (req, res) => {
+
+    let Token = req.cookies.refreshToken
+
+    if (!Token) {
+        return res.status(401).json({
+            msg: "Unauthorized",
+        })
+    }
+
+    let decode = jwt.verify(
+        Token,
+        process.env.JWT_SECRET
+    )
+
+    let refreshId = await UsersCollection.findById(decode.id);
+
+    const acessToken = jwt.sign(
+        { id: refreshId.id, email: refreshId.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "15m" }
+    )
+
+    // In axios header inside
+    let inHeadMemory = acessToken
+
+    res.send({
+        "token": inHeadMemory
     })
 
 }
 
+const logout = (req, res) => {
+    const Token = req.cookies
 
-module.exports = { userRegister }
+    if (!Token.refreshToken) {
+        return res.send({
+            msg: "unauthorized"
+        })
+    }
+
+    res.clearCookie("refreshToken").clearCookie("acessToken").send({
+        msg : "logout Successfully!"
+    })
+
+}
+
+module.exports = { userRegister, refresh,logout };
