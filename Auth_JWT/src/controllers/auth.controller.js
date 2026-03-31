@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 const UsersCollection = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 
+
+// refresh token -> Best practice to store refresh token in  httpOnly cookie or redis 
+// acess token -> Best practice to store access token in memory
+
+
 // /api/register
 const userRegister = async (req, res) => {
     const { name, email, password } = req.body;
