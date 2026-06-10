@@ -219,34 +219,8 @@ app.post("/chat", async (req, res) => {
 
 
         // gemini
-
-        // first prompt
-        // const prompt = `Memory Context: ${context}
-        // User Question: ${message} Answer naturally.`
-
-        // second prompt
-        const prompt = `
-You are an AI assistant.
-
-Available Memories:
-${context || "No memories"}
-
-User Message:
-${message}
-
-Tasks:
-
-1. Decide if the user's message contains long-term memory worth saving. like, name, preferences, important events, etc. If it does, extract that memory. If not, ignore it.
-
-2. Answer the user's message.
-
-Return ONLY valid JSON:
-
-{
-  "save": true,
-  "memory": "User is learning MERN",
-  "answer": "That's great! MERN is a popular stack."}
-  `;
+        const prompt = `Memory Context: ${context}
+        User Question: ${message} Answer naturally.`
 
         //         const response = await gemini.models.generateContent({
         //             model: "gemini-2.5-flash",
@@ -262,64 +236,19 @@ Return ONLY valid JSON:
             model: process.env.AI_GROQ_MODEL,
             messages: [
                 {
-                    role: "system",
-                    content: "You are a memory extraction system. Return ONLY valid JSON."
-                },
-                {
                     role: "user",
                     content: prompt
                 }
             ],
-            temperature: 0,
-            response_format: {
-                type: "json_object"
-            },
-            max_tokens: 200
+            max_tokens: 500
         });
-
-        // upsert in pinecone if save is true
-
-        console.log(response.choices[0].message.content)
-        let result = JSON.parse(response.choices[0].message.content)
-
-        console.log(result.save)
-        if (result.save) {
-            // embedding
-            let EmbeddingValue = await gemini.models.embedContent({
-                model: 'gemini-embedding-2',
-                contents: [
-                    result.memory,
-                ],
-                config: {
-                    outputDimensionality: 4 // 4 Dimensions in the output vector
-                }
-            })
-
-            let arr = EmbeddingValue.embeddings[0].values // 4 Dimensions
-
-
-        //     // Save in Pinecone
-
-            await pcIndex.upsert({
-                records: [
-                    {
-                        id: `user-${Date.now()}`, // unique id for each memory
-                        values: arr,
-                        metadata: {
-                            text: result.memory
-                        }
-                    },
-                ]
-            })
-        }
 
         res.json({
-            answer: result.answer
-        });
+            answer: response.choices[0].message.content
+        })
 
 
-
-
+        
 
 
     } catch (err) {
@@ -329,18 +258,17 @@ Return ONLY valid JSON:
         });
     }
 
-    // Use Memory Context only if relevant to the user's question.
-    // If memory is not relevant, ignore it.` }
-    // }
+// Use Memory Context only if relevant to the user's question.
+// If memory is not relevant, ignore it.` }
+        // }
 
+        res.json({
+            answer: response.text
+        })
 
+    
 
 });
-
-// pendings tasks for the above implementation
-// - Dimesion increase in embedding for better results
-// - fine-tuning the system instructions and prompt for better memory extraction and answer generation
-// - 
 
 
 // async function FullStack() {

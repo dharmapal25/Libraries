@@ -4,6 +4,7 @@
     "@pinecone-database/pinecone": "^7.2.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "groq-sdk": "^1.2.1",
     "install": "^0.13.0",
     "nodemon": "^3.1.14",
     "npm": "^11.16.0"
