@@ -73,12 +73,14 @@ async function demoVectorDB() {
     }
 }
 
-// Generate Embedding
+
+// pinecone + gemini embedding 
 
 async function pinconeDB() {
     try {
+        
+        // Generate Embedding
 
-        // Generate Embedding using Gemini
         let EmbeddingValue = await gemini.models.embedContent({
             model: 'gemini-embedding-2',
             contents: [
@@ -109,7 +111,7 @@ async function pinconeDB() {
             ]
         })
 
-        // Search
+        // Search using that vector
 
         let fetchData = await pcIndex.query({
             vector: [0.7757765, 0.38812122, 0.4695125, 0.16459285],
@@ -134,4 +136,6 @@ pinconeDB();
 
 // demoVectorDB();
 
-module.exports = app
+app.listen(3000,()=> {
+    console.log("Server running..")
+})
