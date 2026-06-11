@@ -33,7 +33,7 @@ const groq = new Groq({
 
 console.log(process.env.PINECONE_API_KEY)
 
-let pcIndex = pinecone.Index("demo-index", "https://demo-index-kxkno1v.svc.aped-4627-b74a.pinecone.io" ) // same as index name in pinecone
+let pcIndex = pinecone.Index("demo-index") // same as index name in pinecone
 
 console.log(pcIndex)
 async function demoVectorDB() {
@@ -115,7 +115,7 @@ async function pinrconeNamespace() {
     finally {
         console.log("Done!");
     }
-    
+
 }
 
 

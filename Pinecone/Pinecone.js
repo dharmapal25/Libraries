@@ -107,7 +107,7 @@ async function pinrconeNamespace() {
                     values: [0.1, 0.2, 2.3, 0.4],
                     metadata: {
                         text: "i love football!",
-                        text_list : [""]
+                        text_list: [""]
                     }
                 }
             ]
