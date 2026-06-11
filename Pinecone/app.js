@@ -1,8 +1,8 @@
+require('dotenv').config()
 const express = require("express");
 const { Pinecone } = require('@pinecone-database/pinecone');
 const { GoogleGenAI } = require("@google/genai");
 const { Groq } = require("groq-sdk/client.js");
-require('dotenv').config()
 
 const app = express();
 app.use(express.json())
@@ -33,9 +33,9 @@ const groq = new Groq({
 
 console.log(process.env.PINECONE_API_KEY)
 
-let pcIndex = pinecone.Index("demo-index") // same as index name in pinecone
+let pcIndex = pinecone.Index("demo-index", "https://demo-index-kxkno1v.svc.aped-4627-b74a.pinecone.io" ) // same as index name in pinecone
 
-
+console.log(pcIndex)
 async function demoVectorDB() {
     try {
 
@@ -77,6 +77,65 @@ async function demoVectorDB() {
         console.log(err);
     }
 }
+
+
+async function pinrconeNamespace() {
+
+    // upsert with namespace
+
+    try {
+        console.log("Loading...");
+
+        await pcIndex.namespace("user10").upsert({
+            records: [
+                {
+                    id: "user1",
+                    values: [0.1, 0.2, 0.3, 0.4],
+                    metadata: {
+                        text: "My name is John"
+                    }
+                }
+            ]
+        });
+
+        // query with namespace
+        let data = await pcIndex.query({
+            vector: [0.1, 0.2, 0.3, 0.4],
+            topK: 1,
+            includeMetadata: true,
+            namespace: "user10"
+        })
+
+        console.log(data);
+
+    }
+    catch (err) {
+        console.log(err.message);
+    }
+    finally {
+        console.log("Done!");
+    }
+    
+}
+
+
+// pinrconeNamespace();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // pinecone + gemini embedding 
@@ -132,6 +191,8 @@ async function pinconeDB() {
     }
 
 }
+
+
 
 
 // pinecone + gemini embedding + gemini LLM
@@ -284,6 +345,7 @@ Return ONLY valid JSON:
 
         console.log(result.save)
         if (result.save) {
+
             // embedding
             let EmbeddingValue = await gemini.models.embedContent({
                 model: 'gemini-embedding-2',
@@ -294,11 +356,10 @@ Return ONLY valid JSON:
                     outputDimensionality: 4 // 4 Dimensions in the output vector
                 }
             })
-
             let arr = EmbeddingValue.embeddings[0].values // 4 Dimensions
 
 
-        //     // Save in Pinecone
+            //     // Save in Pinecone
 
             await pcIndex.upsert({
                 records: [
@@ -320,8 +381,6 @@ Return ONLY valid JSON:
 
 
 
-
-
     } catch (err) {
         console.log(err);
         res.status(500).json({
@@ -337,10 +396,29 @@ Return ONLY valid JSON:
 
 });
 
+
+// with namespace implementation in pinecone
+
+app.post("/userchat", async (req, res) => {
+
+    const { message, userId } = req.body;
+
+    if (!userId || !message) {
+        return res.status(400).json({
+            error: "userId and message are required"
+        });
+    }
+
+
+
+})
+
+
 // pendings tasks for the above implementation
 // - Dimesion increase in embedding for better results
 // - fine-tuning the system instructions and prompt for better memory extraction and answer generation
-// - 
+// - namespace implementation in pinecone for better organization of data
+// - MongoDB implementation for chat history and long-term memory storage
 
 
 // async function FullStack() {
@@ -358,7 +436,7 @@ Return ONLY valid JSON:
 
 // pinconeDB();
 
-// demoVectorDB();
+demoVectorDB();
 
 app.listen(3000, () => {
     console.log("Server running..")
