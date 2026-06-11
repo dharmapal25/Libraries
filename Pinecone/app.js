@@ -122,22 +122,6 @@ async function pinrconeNamespace() {
 // pinrconeNamespace();
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // pinecone + gemini embedding 
 
 async function pinconeDB() {
