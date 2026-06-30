@@ -1,0 +1,13 @@
+services:
+  backend:
+    build: ./backend
+    container_name: express_api
+
+    ports:
+      - "8000:5000"
+
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+    command: npx nodemon -L server.js
