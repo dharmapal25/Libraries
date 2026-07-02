@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Python Runner</title>
+</head>
+
+<body>
+
+<h2>Python Code Runner</h2>
+
+<textarea id="code" rows="15" cols="70">
+print("Hello Flash!")
+</textarea>
+
+<br><br>
+
+<button onclick="runCode()">Run</button>
+
+<h3>Output</h3>
+
+<pre id="output"></pre>
+
+<script>
+
+async function runCode(){
+
+    const code=document.getElementById("code").value;
+
+    const res=await fetch("/run",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({code})
+    });
+
+    const data=await res.json();
+
+    document.getElementById("output").innerText=data.output;
+
+}
+
+</script>
+
+</body>
+</html>
