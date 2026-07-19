@@ -1,22 +1,36 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Circle, Rect } from "react-konva";
 
 export default function App() {
   const stageRef = useRef();
 
   const [tool, setTool] = useState("circle");
-  const [shapes, setShapes] = useState([]);
+
+  // Load shapes from localStorage
+  const [shapes, setShapes] = useState(() => {
+    const saved = localStorage.getItem("shapes");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [current, setCurrent] = useState(null);
   const [drawing, setDrawing] = useState(false);
 
+  // Save shapes whenever they change
+  useEffect(() => {
+    localStorage.setItem("shapes", JSON.stringify(shapes));
+  }, [shapes]);
+
+  console.log("shapes",shapes)
+
   function getMouse() {
-    return stageRef.current.getPointerPosition(); // stage inside the cursor position {x,y}
+    return stageRef.current.getPointerPosition();
   }
 
   function handleMouseDown() {
     if (tool === "select") return;
 
     const pos = getMouse();
+
     setDrawing(true);
 
     if (tool === "circle") {
@@ -66,21 +80,46 @@ export default function App() {
   }
 
   function handleMouseUp() {
-    if (!drawing) return;
+    if (!drawing || !current) return;
 
-    setShapes([...shapes, current]);
+    setShapes((prev) => [...prev, current]);
 
     setCurrent(null);
-
     setDrawing(false);
+    console.log(shapes)
   }
+
+  function clearCanvas() {
+    setShapes([]);
+    localStorage.removeItem("shapes");
+  }
+
+  console.log("Shapes:", shapes);
 
   return (
     <>
-      <div style={{ display: "flex", gap: 10, padding: 10 }}>
-        <button onClick={() => setTool("circle")}>Circle</button>
-        <button onClick={() => setTool("rect")}>Rectangle</button>
-        <button onClick={() => setTool("select")}>Select</button>
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          padding: 10,
+        }}
+      >
+        <button onClick={() => setTool("circle")}>
+          Circle
+        </button>
+
+        <button onClick={() => setTool("rect")}>
+          Rectangle
+        </button>
+
+        <button onClick={() => setTool("select")}>
+          Select
+        </button>
+
+        <button onClick={clearCanvas}>
+          Clear
+        </button>
       </div>
 
       <Stage
@@ -90,13 +129,16 @@ export default function App() {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        style={{ background: "#ddd" }}
+        style={{
+          background: "#ddd",
+        }}
       >
         <Layer>
           {shapes.map((shape, index) => {
             if (shape.type === "circle") {
               return (
                 <Circle
+                  fill={"green"}
                   key={index}
                   {...shape}
                   stroke="black"
