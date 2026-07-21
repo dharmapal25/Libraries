@@ -1,57 +1,115 @@
 const express = require("express");
 const http = require("http");
-const cors = require("cors");
 const { Server } = require("socket.io");
+const cors = require("cors");
 
 const app = express();
 
-app.use(cors())
-app.use(express.json());
-
+app.use(cors());
 
 const server = http.createServer(app);
 
-let io = new Server(server,{
-    cors : {
-        origin : "http://localhost:5173",
-    }
-})
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+    },
+});
 
+// --------------------------------------
+// userId -> socket.id
+// We store who is connected
+// --------------------------------------
+const onlineUsers = {};
 
 io.on("connection", (socket) => {
 
-    console.log("Connected :", socket.id);
+    console.log("\n==============================");
+    console.log("NEW CONNECTION");
+    console.log("Socket ID :", socket.id);
 
-    // Join Room
-    socket.on("join-room", (room) => {
+    // --------------------------------------
+    // Client tells server:
+    // "I am user 101"
+    // --------------------------------------
+    socket.on("register", ({ userId }) => {
 
-        socket.join(room);
+        console.log("\nREGISTER EVENT");
 
-        console.log(`${socket.id} joined ${room}`);
+        // Store latest socket id
+        // If user refreshes page,
+        // socket.id changes and this line updates it.
+        onlineUsers[userId] = socket.id;
+
+        console.log("User ID :", userId);
+        console.log("Socket ID :", socket.id);
+
+        console.log("\nONLINE USERS");
+        console.log(onlineUsers);
 
     });
 
-    // Send Message
-    socket.on("send-message", ({ room, message }) => {
+    // --------------------------------------
+    // Example Private Message
+    // --------------------------------------
+    socket.on("send-message", ({ toUserId, message }) => {
 
-        console.log("Room :", room);
-        console.log("Message :", message);
+        console.log("\nSEND MESSAGE EVENT");
 
-        io.to(room).emit("receive-message", {
-            sender: socket.id,
+        console.log("To User :", toUserId);
+
+        // Find receiver socket
+        const receiverSocketId = onlineUsers[toUserId];
+
+        console.log("Receiver Socket :", receiverSocketId);
+
+        if (!receiverSocketId) {
+
+            console.log("User Offline");
+
+            return;
+
+        }
+
+        // Send only to receiver
+        io.to(receiverSocketId).emit("receive-message", {
+
+            from: socket.id,
             message,
+
         });
 
     });
 
+    // --------------------------------------
+    // User Disconnect
+    // --------------------------------------
     socket.on("disconnect", () => {
 
-        console.log("Disconnected :", socket.id);
+        console.log("\nDISCONNECTED");
+        console.log("Socket :", socket.id);
+
+        // Remove old socket
+        for (const userId in onlineUsers) {
+
+            if (onlineUsers[userId] === socket.id) {
+
+                delete onlineUsers[userId];
+
+                console.log("Removed User :", userId);
+
+            }
+
+        }
+
+        console.log("\nONLINE USERS");
+        console.log(onlineUsers);
 
     });
 
 });
 
-server.listen(4000,()=> {
-    console.log("Server runningg...");
-})
+server.listen(4000, () => {
+
+    console.log("Server Running On Port 4000");
+
+});

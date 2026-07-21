@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.18.1/dist/axios.min.js"></script>
+
+</head>
+
+<body>
+
+    <h2>Razorpay Test Payment</h2>
+    <input type="number" id="amount" placeholder="Amount in ₹" value="500" />
+    <button onclick="handlePayment()">Pay Now</button>
+
+</body>
+
+
+<script>
+    const handlePayment = async () => {
+
+        const amount = document.querySelector("#amount").value;
+
+        // destructuring response.data from the backend
+        const { data } = await axios.post("http://localhost:3000/api/order-verify", {
+            amount: amount * 100
+        });
+
+        const order = data.order;
+
+        const options = {
+            key: "rzp_test_Rp4UfVRvSGNvh0",
+            amount: order.amount,
+            name: "Flash Razorpay payment test",
+            description: "Test Transaction",
+            order_id: order.id,
+
+            handler: async function (response) {
+                const paymentId = response.razorpay_payment_id;
+                const orderId = response.razorpay_order_id;
+                const signature = response.razorpay_signature;
+
+                const { data } = await axios.post("http://localhost:3000/api/verify-payment", {
+                    paymentId, orderId, signature
+                });
+
+                alert(data.msg);
+            },
+
+            // prefill details (/login details of the user)
+            prefill: {
+                name: 'Flash',
+                email: 'flash@example.com',
+                contact: '9999999999',
+            },
+            theme: { color: '#3399cc' },
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+
+    }
+
+</script>
+
+</html>
