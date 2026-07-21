@@ -1,3 +1,4 @@
+require("dotenv").config()
 const express = require("express");
 const mongoDBConnection = require("./config/db");
 const productCollection = require("./models/products.model");
