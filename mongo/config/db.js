@@ -6,7 +6,7 @@ const mongoDBConnection = async ()=> {
         console.log("Database connected")
 
     }catch(err) {
-        console.log("Database connection fail")
+        console.log("Database connection fail",err)
     }
 }
 
