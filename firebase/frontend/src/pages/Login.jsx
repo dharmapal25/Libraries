@@ -42,3 +42,27 @@ export default function Login() {
     </div>
   );
 }
+
+
+
+// ---------------------
+
+// const handleGoogleLogin = async () => {
+//   try {
+//     const result = await signInWithPopup(auth, googleProvider);
+//     const idToken = await result.user.getIdToken();
+
+//     const response = await fetch("http://localhost:5000/api/auth/google-login", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       credentials: "include", // 👈 cookies allow 
+//       body: JSON.stringify({ idToken }),
+//     });
+
+//     const data = await response.json();
+//     console.log(data.user);
+//     // redirect ---
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
