@@ -5,6 +5,7 @@ import App from './App.jsx'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import ProtectedRoute from "./components/ProtectedRoute.jsx"
+import About from "./pages/About.jsx"
 
 const routes = createBrowserRouter([
   {
@@ -18,7 +19,16 @@ const routes = createBrowserRouter([
         <Dashboard />
       </ProtectedRoute>
     )
-  }
+  },
+  {
+    path: "/about",
+    element: (
+      <ProtectedRoute>
+        <About />
+      </ProtectedRoute>
+    )
+  },
+
 ])
 
 createRoot(document.getElementById('root')).render(
