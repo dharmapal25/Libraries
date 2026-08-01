@@ -8,38 +8,59 @@ dotenv.config();
 
 const app = express();
 
-// Session
+// Session Configuration
 app.use(
   session({
-    secret: "flash-secret",
+    secret: "abcd-secret",
     resave: false,
     saveUninitialized: false,
   })
 );
 
-// Passport
+// Initialize Passport
+// Starts Passport authentication
+// ---------------------------------------------
 app.use(passport.initialize());
+
+
+// Enable Passport Session
+// Keeps user logged in after authentication
+// ---------------------------------------------
 app.use(passport.session());
 
-// Google Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    },
-    (accessToken, refreshToken, profile, done) => {
-      // Normally MongoDB me save karte hain
-      return done(null, profile);
-    }
-  )
+
+// Google OAuth Strategy
+// Configure Google Login
+// ---------------------------------------------
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.GOOGLE_CALLBACK_URL,
+},
+
+  (accessToken, refreshToken, profile, done) => {
+
+    // Normally:
+    // - Find user in database
+    // - Create user if not exists
+    // - Generate JWT (optional)
+
+    return done(null, profile);
+  }
+)
 );
 
+
+// Serialize User
+// Save user into session
+// ---------------------------------------------
 passport.serializeUser((user, done) => {
   done(null, user);
 });
 
+// Deserialize User
+// Get user from session
+// ---------------------------------------------
 passport.deserializeUser((user, done) => {
   done(null, user);
 });
@@ -57,7 +78,9 @@ app.get(
   })
 );
 
-// Callback
+// Google Callback Route
+// Google redirects user here after login
+// ---------------------------------------------
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
@@ -68,15 +91,18 @@ app.get(
   }
 );
 
-// Profile
+// Protected Profile Route
+// Only logged-in users can access
+// ---------------------------------------------
 app.get("/profile", (req, res) => {
   if (!req.isAuthenticated()) {
     return res.redirect("/");
   }
 
-  res.json(req.user);
-  console.log("req.isAuthenticated() : >> ",req.isAuthenticated())
+  res.json({ "user": req.user, "request : ": req });
+  console.log("req.isAuthenticated() : >> ", req.isAuthenticated())
 });
+
 
 // Logout
 app.get("/logout", (req, res) => {
@@ -85,9 +111,13 @@ app.get("/logout", (req, res) => {
   });
 });
 
+
+//  Login Failed Route
 app.get("/failed", (req, res) => {
   res.send("Login Failed");
 });
+
+
 
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");
