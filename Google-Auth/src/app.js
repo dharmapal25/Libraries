@@ -99,7 +99,7 @@ app.get("/profile", (req, res) => {
     return res.redirect("/");
   }
 
-  res.json({ "user": req.user, "request : ": req });
+  res.json({ "user": req.user });
   console.log("req.isAuthenticated() : >> ", req.isAuthenticated())
 });
 
