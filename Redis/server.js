@@ -1,4 +1,5 @@
 import app from "./src/app.js";
+import redis from "./src/redis.js";
 import Radis from "ioredis";
 
 const PORT = process.env.PORT;
